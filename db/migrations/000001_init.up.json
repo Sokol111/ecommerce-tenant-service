@@ -1,0 +1,22 @@
+[
+  {
+    "createIndexes": "tenant",
+    "indexes": [
+      {
+        "name": "tenant_slug_unique_v1",
+        "key": { "slug": 1 },
+        "unique": true
+      },
+      {
+        "name": "tenant_enabled_v1",
+        "key": { "enabled": 1 }
+      },
+      {
+        "name": "tenant_createdAt_v1",
+        "key": { "createdAt": 1 }
+      }
+    ],
+    "commitQuorum": "majority",
+    "writeConcern": { "w": "majority" }
+  }
+]

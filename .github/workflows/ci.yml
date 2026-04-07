@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'VERSION'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'VERSION'
+      - 'docs/**'
+  workflow_call:  # Makes this workflow reusable
+
+jobs:
+  go-ci:
+    uses: Sokol111/ecommerce-infrastructure/.github/workflows/go-ci.yml@master
+    with:
+      coverage-threshold: 80
+      coverage-exclude-pattern: 'mocks/|/module\.go|main\.go|/http/|/event/|/infrastructure/'

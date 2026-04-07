@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - VERSION
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: checks
+    uses: Sokol111/ecommerce-infrastructure/.github/workflows/go-release.yml@master
+
+  deploy:
+    needs: release
+    uses: Sokol111/ecommerce-infrastructure/.github/workflows/deploy.yml@master
+    with:
+      image_tag: ${{ needs.release.outputs.image_tag }}
+    secrets:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}

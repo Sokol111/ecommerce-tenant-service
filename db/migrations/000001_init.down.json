@@ -1,0 +1,6 @@
+[
+  {
+    "dropIndexes": "tenant",
+    "index": ["tenant_slug_unique_v1", "tenant_enabled_v1", "tenant_createdAt_v1"]
+  }
+]

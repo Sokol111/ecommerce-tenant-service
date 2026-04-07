@@ -1,0 +1,47 @@
+# mockery v3 configuration
+# https://vektra.github.io/mockery/latest/configuration/
+
+# Global settings
+all: false
+dir: "{{.InterfaceDir}}/mocks"
+filename: "mock_{{.InterfaceName | snakecase}}.go"
+structname: "Mock{{.InterfaceName}}"
+pkgname: "mocks"
+template: testify
+formatter: goimports
+log-level: info
+
+packages:
+  # ===== Domain Repositories =====
+  github.com/Sokol111/ecommerce-catalog-service/internal/domain/product:
+    interfaces:
+      Repository:
+
+  github.com/Sokol111/ecommerce-catalog-service/internal/domain/category:
+    interfaces:
+      Repository:
+
+  github.com/Sokol111/ecommerce-catalog-service/internal/domain/attribute:
+    interfaces:
+      Repository:
+
+  # ===== Event Factories =====
+  github.com/Sokol111/ecommerce-catalog-service/internal/event:
+    interfaces:
+      ProductEventFactory:
+      CategoryEventFactory:
+      AttributeEventFactory:
+
+  # ===== External Dependencies (ecommerce-commons) =====
+  # These mocks will be generated in testutil/mocks
+  github.com/Sokol111/ecommerce-commons/pkg/messaging/patterns/outbox:
+    config:
+      dir: "internal/testutil/mocks"
+    interfaces:
+      Outbox:
+
+  github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo:
+    config:
+      dir: "internal/testutil/mocks"
+    interfaces:
+      TxManager:
