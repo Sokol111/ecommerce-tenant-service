@@ -54,16 +54,17 @@ func (h *deleteTenantHandler) Handle(ctx context.Context, cmd DeleteTenantComman
 	msg := h.eventFactory.NewTenantDeletedOutboxMessage(ctx, t.Slug)
 
 	send, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (outbox.SendFunc, error) {
-		if err := h.repo.Delete(txCtx, t.ID); err != nil {
+		err = h.repo.Delete(txCtx, t.ID)
+		if err != nil {
 			return nil, fmt.Errorf("failed to delete tenant: %w", err)
 		}
 
-		send, err := h.outbox.Create(txCtx, msg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create outbox: %w", err)
+		createdSend, createOutboxErr := h.outbox.Create(txCtx, msg)
+		if createOutboxErr != nil {
+			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}
 
-		return send, nil
+		return createdSend, nil
 	})
 	if err != nil {
 		return err

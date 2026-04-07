@@ -15,7 +15,16 @@ import (
 	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
 )
 
-var aboutBlankURL, _ = url.Parse("about:blank")
+var aboutBlankURL = mustParseURL("about:blank")
+
+func mustParseURL(rawURL string) *url.URL {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		panic(err)
+	}
+
+	return parsedURL
+}
 
 type tenantHandler struct {
 	createHandler    command.CreateTenantCommandHandler

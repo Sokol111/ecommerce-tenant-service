@@ -58,7 +58,8 @@ func (h *updateTenantHandler) Handle(ctx context.Context, cmd UpdateTenantComman
 		return nil, mongo.ErrOptimisticLocking
 	}
 
-	if err := t.Update(cmd.Name, cmd.Enabled); err != nil {
+	err = t.Update(cmd.Name, cmd.Enabled)
+	if err != nil {
 		return nil, err
 	}
 
@@ -70,14 +71,14 @@ func (h *updateTenantHandler) Handle(ctx context.Context, cmd UpdateTenantComman
 	}
 
 	res, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (*updateResult, error) {
-		updated, err := h.repo.Update(txCtx, t)
-		if err != nil {
-			return nil, fmt.Errorf("failed to update tenant: %w", err)
+		updated, updateErr := h.repo.Update(txCtx, t)
+		if updateErr != nil {
+			return nil, fmt.Errorf("failed to update tenant: %w", updateErr)
 		}
 
-		send, err := h.outbox.Create(txCtx, msg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create outbox: %w", err)
+		send, createOutboxErr := h.outbox.Create(txCtx, msg)
+		if createOutboxErr != nil {
+			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}
 
 		return &updateResult{Tenant: updated, Send: send}, nil

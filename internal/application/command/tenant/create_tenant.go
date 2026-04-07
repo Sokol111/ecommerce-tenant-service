@@ -64,13 +64,14 @@ func (h *createTenantHandler) Handle(ctx context.Context, cmd CreateTenantComman
 	}
 
 	res, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (*createResult, error) {
-		if err := h.repo.Insert(txCtx, t); err != nil {
+		err = h.repo.Insert(txCtx, t)
+		if err != nil {
 			return nil, fmt.Errorf("failed to insert tenant: %w", err)
 		}
 
-		send, err := h.outbox.Create(txCtx, msg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create outbox: %w", err)
+		send, createOutboxErr := h.outbox.Create(txCtx, msg)
+		if createOutboxErr != nil {
+			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}
 
 		return &createResult{Tenant: t, Send: send}, nil
