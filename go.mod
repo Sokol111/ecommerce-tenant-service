@@ -3,8 +3,8 @@ module github.com/Sokol111/ecommerce-tenant-service
 go 1.26.2
 
 require (
-	github.com/Sokol111/ecommerce-commons v0.6.4
-	github.com/Sokol111/ecommerce-tenant-service-api v0.0.4
+	github.com/Sokol111/ecommerce-commons v0.6.5
+	github.com/Sokol111/ecommerce-tenant-service-api v0.0.5
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.53.0
 	go.mongodb.org/mongo-driver/v2 v2.5.0
