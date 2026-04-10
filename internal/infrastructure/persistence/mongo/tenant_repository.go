@@ -15,7 +15,7 @@ type tenantRepository struct {
 
 func newTenantRepository(mongo commonsmongo.Mongo, mapper *tenantMapper) (tenant.Repository, error) {
 	genericRepo, err := commonsmongo.NewGenericRepository(
-		mongo.GetCollection("tenant"),
+		mongo, "tenant",
 		mapper,
 	)
 	if err != nil {
