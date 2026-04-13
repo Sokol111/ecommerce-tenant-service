@@ -27,3 +27,4 @@ go.work.sum
 .idea/
 Dockerfile.temp
 go-service.mk
+__debug_bin*
