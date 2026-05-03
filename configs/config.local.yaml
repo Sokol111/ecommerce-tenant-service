@@ -10,6 +10,7 @@ mongo:
 security:
   token:
     jwks-url: "http://zitadel-api:8080/oauth/v2/keys"
+    host-override: "localhost"
 
 kafka:
   brokers: "redpanda:29092"
