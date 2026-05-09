@@ -8,9 +8,12 @@ mongo:
   replica-set: rs0
 
 security:
-  token:
-    jwks-url: "http://zitadel-api:8080/oauth/v2/keys"
-    host-override: "localhost"
+  jwks:
+    jwks-url: "http://logto:3001/oidc/jwks"
+    audience: "https://api.sokolshop.com"
+  client-credentials:
+    client-id: "tenant-service-m2m"
+    token-url: "http://logto:3001/oidc/token"
 
 kafka:
   brokers: "redpanda:29092"

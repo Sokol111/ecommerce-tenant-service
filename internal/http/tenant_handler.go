@@ -213,3 +213,12 @@ func (h *tenantHandler) GetEnabledTenantSlugs(ctx context.Context) (httpapi.GetE
 		Slugs: slugs,
 	}, nil
 }
+
+func (h *tenantHandler) RegisterTenant(_ context.Context, _ *httpapi.RegisterTenantRequest) (httpapi.RegisterTenantRes, error) {
+	return &httpapi.RegisterTenantInternalServerError{
+		Type:   *aboutBlankURL,
+		Title:  "Not Implemented",
+		Status: 501,
+		Detail: httpapi.NewOptString("Tenant registration is not yet implemented"),
+	}, nil
+}

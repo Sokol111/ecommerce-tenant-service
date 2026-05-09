@@ -14,8 +14,12 @@ kafka:
     auto-register-schemas: true
 
 security:
-  token:
-    jwks-url: "http://localhost:8080/oauth/v2/keys"
+  jwks:
+    jwks-url: "http://localhost:3001/oidc/jwks"
+    audience: "https://api.sokolshop.com"
+  client-credentials:
+    client-id: "tenant-service-m2m"
+    token-url: "http://localhost:3001/oidc/token"
 
 observability:
   otel-collector-endpoint: ""
