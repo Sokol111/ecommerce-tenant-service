@@ -1,5 +1,9 @@
 [
   {
+    "dropIndexes": "registration",
+    "index": ["registration_completedAt_ttl_v1", "registration_slug_unique_v1", "registration_status_nextRetryAt_v1"]
+  },
+  {
     "dropIndexes": "tenant",
     "index": ["tenant_slug_unique_v1", "tenant_enabled_v1", "tenant_createdAt_v1"]
   }

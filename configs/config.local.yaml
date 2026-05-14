@@ -31,3 +31,6 @@ observability:
 pprof:
   enabled: true
   port: 6060
+
+logto:
+  base-url: "http://logto:3001"

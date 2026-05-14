@@ -12,6 +12,7 @@ import (
 	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
 	command "github.com/Sokol111/ecommerce-tenant-service/internal/application/command/tenant"
 	query "github.com/Sokol111/ecommerce-tenant-service/internal/application/query/tenant"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/registration"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
 )
 
@@ -27,29 +28,35 @@ func mustParseURL(rawURL string) *url.URL {
 }
 
 type tenantHandler struct {
-	createHandler    command.CreateTenantCommandHandler
-	updateHandler    command.UpdateTenantCommandHandler
-	deleteHandler    command.DeleteTenantCommandHandler
-	getBySlugHandler query.GetTenantBySlugQueryHandler
-	getListHandler   query.GetTenantListQueryHandler
-	getSlugsHandler  query.GetEnabledSlugsQueryHandler
+	createHandler       command.CreateTenantCommandHandler
+	updateHandler       command.UpdateTenantCommandHandler
+	deleteHandler       command.DeleteTenantCommandHandler
+	registerHandler     command.RegisterTenantCommandHandler
+	getBySlugHandler    query.GetTenantBySlugQueryHandler
+	getListHandler      query.GetTenantListQueryHandler
+	getSlugsHandler     query.GetEnabledSlugsQueryHandler
+	getRegStatusHandler query.GetRegistrationStatusQueryHandler
 }
 
 func newTenantHandler(
 	createHandler command.CreateTenantCommandHandler,
 	updateHandler command.UpdateTenantCommandHandler,
 	deleteHandler command.DeleteTenantCommandHandler,
+	registerHandler command.RegisterTenantCommandHandler,
 	getBySlugHandler query.GetTenantBySlugQueryHandler,
 	getListHandler query.GetTenantListQueryHandler,
 	getSlugsHandler query.GetEnabledSlugsQueryHandler,
+	getRegStatusHandler query.GetRegistrationStatusQueryHandler,
 ) *tenantHandler {
 	return &tenantHandler{
-		createHandler:    createHandler,
-		updateHandler:    updateHandler,
-		deleteHandler:    deleteHandler,
-		getBySlugHandler: getBySlugHandler,
-		getListHandler:   getListHandler,
-		getSlugsHandler:  getSlugsHandler,
+		createHandler:       createHandler,
+		updateHandler:       updateHandler,
+		deleteHandler:       deleteHandler,
+		registerHandler:     registerHandler,
+		getBySlugHandler:    getBySlugHandler,
+		getListHandler:      getListHandler,
+		getSlugsHandler:     getSlugsHandler,
+		getRegStatusHandler: getRegStatusHandler,
 	}
 }
 
@@ -214,11 +221,69 @@ func (h *tenantHandler) GetEnabledTenantSlugs(ctx context.Context) (httpapi.GetE
 	}, nil
 }
 
-func (h *tenantHandler) RegisterTenant(_ context.Context, _ *httpapi.RegisterTenantRequest) (httpapi.RegisterTenantRes, error) {
-	return &httpapi.RegisterTenantInternalServerError{
-		Type:   *aboutBlankURL,
-		Title:  "Not Implemented",
-		Status: 501,
-		Detail: httpapi.NewOptString("Tenant registration is not yet implemented"),
-	}, nil
+func (h *tenantHandler) RegisterTenant(ctx context.Context, req *httpapi.RegisterTenantRequest) (httpapi.RegisterTenantRes, error) {
+	cmd := command.RegisterTenantCommand{
+		Slug:      req.Slug,
+		Name:      req.Name,
+		Email:     req.Email,
+		Password:  req.Password,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	}
+
+	result, err := h.registerHandler.Handle(ctx, cmd)
+	if err != nil {
+		if errors.Is(err, tenant.ErrInvalidTenantData) {
+			return &httpapi.RegisterTenantBadRequest{
+				Status: 400,
+				Type:   *aboutBlankURL,
+				Title:  err.Error(),
+			}, nil
+		}
+		if errors.Is(err, tenant.ErrSlugAlreadyExists) || errors.Is(err, registration.ErrRegistrationAlreadyExists) {
+			return &httpapi.RegisterTenantConflict{
+				Status: 409,
+				Type:   *aboutBlankURL,
+				Title:  "Tenant with this slug already exists",
+			}, nil
+		}
+		return nil, err
+	}
+
+	// Completed synchronously — return 201 with tenant
+	if result.Tenant != nil {
+		return toTenantResponse(result.Tenant), nil
+	}
+
+	// Deferred to worker — return 202 with status
+	return toRegistrationStatusResponse(result.Registration), nil
+}
+
+func (h *tenantHandler) GetRegistrationStatus(ctx context.Context, params httpapi.GetRegistrationStatusParams) (httpapi.GetRegistrationStatusRes, error) {
+	q := query.GetRegistrationStatusQuery{Slug: params.Slug}
+
+	reg, err := h.getRegStatusHandler.Handle(ctx, q)
+	if err != nil {
+		if errors.Is(err, registration.ErrRegistrationNotFound) {
+			return &httpapi.GetRegistrationStatusNotFound{
+				Status: 404,
+				Type:   *aboutBlankURL,
+				Title:  "Registration not found",
+			}, nil
+		}
+		return nil, err
+	}
+
+	return toRegistrationStatusResponse(reg), nil
+}
+
+func toRegistrationStatusResponse(reg *registration.Registration) *httpapi.RegistrationStatusResponse {
+	resp := &httpapi.RegistrationStatusResponse{
+		Slug:   reg.Slug,
+		Status: httpapi.RegistrationStatusResponseStatus(reg.Status),
+	}
+	if reg.FailureReason != nil {
+		resp.FailureReason = httpapi.NewOptString(*reg.FailureReason)
+	}
+	return resp
 }

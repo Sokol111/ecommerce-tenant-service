@@ -15,6 +15,7 @@ import (
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/event"
 	internalhttp "github.com/Sokol111/ecommerce-tenant-service/internal/http"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/logto"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/messaging/kafka"
 	internalmongo "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/persistence/mongo"
 	"go.uber.org/fx"
@@ -37,6 +38,7 @@ var AppModules = fx.Options(
 	event.Module(),
 	application.Module(),
 	kafka.Module(),
+	logto.Module(),
 
 	// HTTP
 	internalhttp.Module(),

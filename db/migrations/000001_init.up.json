@@ -18,5 +18,26 @@
     ],
     "commitQuorum": "majority",
     "writeConcern": { "w": "majority" }
+  },
+  {
+    "createIndexes": "registration",
+    "indexes": [
+      {
+        "name": "registration_completedAt_ttl_v1",
+        "key": { "completedAt": 1 },
+        "expireAfterSeconds": 604800
+      },
+      {
+        "name": "registration_slug_unique_v1",
+        "key": { "slug": 1 },
+        "unique": true
+      },
+      {
+        "name": "registration_status_nextRetryAt_v1",
+        "key": { "status": 1, "nextRetryAt": 1 }
+      }
+    ],
+    "commitQuorum": "majority",
+    "writeConcern": { "w": "majority" }
   }
 ]

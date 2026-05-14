@@ -4,12 +4,14 @@ go 1.26.2
 
 require (
 	github.com/Sokol111/ecommerce-commons v0.7.1
-	github.com/Sokol111/ecommerce-tenant-service-api v0.0.9
+	github.com/Sokol111/ecommerce-tenant-service-api v0.1.0
 	github.com/google/uuid v1.6.0
+	github.com/knadh/koanf/v2 v2.3.4
 	github.com/samber/lo v1.53.0
 	go.mongodb.org/mongo-driver/v2 v2.5.1
 	go.uber.org/fx v1.24.0
 	go.uber.org/zap v1.27.1
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
@@ -40,7 +42,6 @@ require (
 	github.com/knadh/koanf/parsers/yaml v1.1.0 // indirect
 	github.com/knadh/koanf/providers/env/v2 v2.0.0 // indirect
 	github.com/knadh/koanf/providers/file v1.2.1 // indirect
-	github.com/knadh/koanf/v2 v2.3.4 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -79,7 +80,6 @@ require (
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/net v0.53.0 // indirect
-	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
