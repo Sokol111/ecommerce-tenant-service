@@ -1,21 +1,16 @@
-package event
+package kafka
 
 import (
 	"context"
 
 	"github.com/Sokol111/ecommerce-commons/pkg/messaging/patterns/outbox"
 	"github.com/Sokol111/ecommerce-tenant-service-api/gen/events"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 )
-
-type TenantEventFactory interface {
-	NewTenantUpdatedOutboxMessage(ctx context.Context, t *tenant.Tenant) outbox.Message
-	NewTenantDeletedOutboxMessage(ctx context.Context, slug string) outbox.Message
-}
 
 type tenantEventFactory struct{}
 
-func newTenantEventFactory() TenantEventFactory {
+func newTenantEventFactory() tenant.TenantEventFactory {
 	return &tenantEventFactory{}
 }
 

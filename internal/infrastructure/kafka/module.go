@@ -8,5 +8,6 @@ import (
 func Module() fx.Option {
 	return fx.Options(
 		events.Module(),
+		fx.Provide(newTenantEventFactory),
 	)
 }

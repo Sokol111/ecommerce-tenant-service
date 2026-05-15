@@ -3,62 +3,14 @@ package http //nolint:revive // package name intentional
 import (
 	"context"
 	"errors"
-	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 
 	"github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
 	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
-	command "github.com/Sokol111/ecommerce-tenant-service/internal/application/command/tenant"
-	query "github.com/Sokol111/ecommerce-tenant-service/internal/application/query/tenant"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/registration"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 )
-
-var aboutBlankURL = mustParseURL("about:blank")
-
-func mustParseURL(rawURL string) *url.URL {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		panic(err)
-	}
-
-	return parsedURL
-}
-
-type tenantHandler struct {
-	createHandler       command.CreateTenantCommandHandler
-	updateHandler       command.UpdateTenantCommandHandler
-	deleteHandler       command.DeleteTenantCommandHandler
-	registerHandler     command.RegisterTenantCommandHandler
-	getBySlugHandler    query.GetTenantBySlugQueryHandler
-	getListHandler      query.GetTenantListQueryHandler
-	getSlugsHandler     query.GetEnabledSlugsQueryHandler
-	getRegStatusHandler query.GetRegistrationStatusQueryHandler
-}
-
-func newTenantHandler(
-	createHandler command.CreateTenantCommandHandler,
-	updateHandler command.UpdateTenantCommandHandler,
-	deleteHandler command.DeleteTenantCommandHandler,
-	registerHandler command.RegisterTenantCommandHandler,
-	getBySlugHandler query.GetTenantBySlugQueryHandler,
-	getListHandler query.GetTenantListQueryHandler,
-	getSlugsHandler query.GetEnabledSlugsQueryHandler,
-	getRegStatusHandler query.GetRegistrationStatusQueryHandler,
-) *tenantHandler {
-	return &tenantHandler{
-		createHandler:       createHandler,
-		updateHandler:       updateHandler,
-		deleteHandler:       deleteHandler,
-		registerHandler:     registerHandler,
-		getBySlugHandler:    getBySlugHandler,
-		getListHandler:      getListHandler,
-		getSlugsHandler:     getSlugsHandler,
-		getRegStatusHandler: getRegStatusHandler,
-	}
-}
 
 func toTenantResponse(t *tenant.Tenant) *httpapi.TenantResponse {
 	return &httpapi.TenantResponse{
@@ -73,12 +25,12 @@ func toTenantResponse(t *tenant.Tenant) *httpapi.TenantResponse {
 }
 
 func (h *tenantHandler) CreateTenant(ctx context.Context, req *httpapi.CreateTenantRequest) (httpapi.CreateTenantRes, error) {
-	cmd := command.CreateTenantCommand{
+	cmd := tenant.CreateCommand{
 		Slug: req.Slug,
 		Name: req.Name,
 	}
 
-	created, err := h.createHandler.Handle(ctx, cmd)
+	created, err := h.tenants.Create(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, tenant.ErrInvalidTenantData) {
 			return &httpapi.CreateTenantBadRequest{
@@ -101,14 +53,14 @@ func (h *tenantHandler) CreateTenant(ctx context.Context, req *httpapi.CreateTen
 }
 
 func (h *tenantHandler) UpdateTenant(ctx context.Context, req *httpapi.UpdateTenantRequest) (httpapi.UpdateTenantRes, error) {
-	cmd := command.UpdateTenantCommand{
+	cmd := tenant.UpdateCommand{
 		Slug:    req.Slug,
 		Version: req.Version,
 		Name:    req.Name,
 		Enabled: req.Enabled,
 	}
 
-	updated, err := h.updateHandler.Handle(ctx, cmd)
+	updated, err := h.tenants.Update(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, tenant.ErrInvalidTenantData) {
 			return &httpapi.UpdateTenantBadRequest{
@@ -138,9 +90,9 @@ func (h *tenantHandler) UpdateTenant(ctx context.Context, req *httpapi.UpdateTen
 }
 
 func (h *tenantHandler) GetTenantBySlug(ctx context.Context, params httpapi.GetTenantBySlugParams) (httpapi.GetTenantBySlugRes, error) {
-	q := query.GetTenantBySlugQuery{Slug: params.Slug}
+	q := tenant.GetBySlugQuery{Slug: params.Slug}
 
-	found, err := h.getBySlugHandler.Handle(ctx, q)
+	found, err := h.tenants.GetBySlug(ctx, q)
 	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.GetTenantBySlugNotFound{
 			Status: 404,
@@ -156,9 +108,9 @@ func (h *tenantHandler) GetTenantBySlug(ctx context.Context, params httpapi.GetT
 }
 
 func (h *tenantHandler) DeleteTenant(ctx context.Context, params httpapi.DeleteTenantParams) (httpapi.DeleteTenantRes, error) {
-	cmd := command.DeleteTenantCommand{Slug: params.Slug}
+	cmd := tenant.DeleteCommand{Slug: params.Slug}
 
-	err := h.deleteHandler.Handle(ctx, cmd)
+	err := h.tenants.Delete(ctx, cmd)
 	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.DeleteTenantNotFound{
 			Status: 404,
@@ -187,7 +139,7 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, params httpapi.GetTen
 		enabled = &e
 	}
 
-	q := query.GetTenantListQuery{
+	q := tenant.GetListQuery{
 		Page:    params.Page,
 		Size:    params.Size,
 		Enabled: enabled,
@@ -195,7 +147,7 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, params httpapi.GetTen
 		Order:   string(params.Order.Or(httpapi.GetTenantListOrderDesc)),
 	}
 
-	result, err := h.getListHandler.Handle(ctx, q)
+	result, err := h.tenants.GetList(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +163,7 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, params httpapi.GetTen
 }
 
 func (h *tenantHandler) GetEnabledTenantSlugs(ctx context.Context) (httpapi.GetEnabledTenantSlugsRes, error) {
-	slugs, err := h.getSlugsHandler.Handle(ctx)
+	slugs, err := h.tenants.GetEnabledSlugs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -219,71 +171,4 @@ func (h *tenantHandler) GetEnabledTenantSlugs(ctx context.Context) (httpapi.GetE
 	return &httpapi.TenantSlugListResponse{
 		Slugs: slugs,
 	}, nil
-}
-
-func (h *tenantHandler) RegisterTenant(ctx context.Context, req *httpapi.RegisterTenantRequest) (httpapi.RegisterTenantRes, error) {
-	cmd := command.RegisterTenantCommand{
-		Slug:      req.Slug,
-		Name:      req.Name,
-		Email:     req.Email,
-		Password:  req.Password,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-	}
-
-	result, err := h.registerHandler.Handle(ctx, cmd)
-	if err != nil {
-		if errors.Is(err, tenant.ErrInvalidTenantData) {
-			return &httpapi.RegisterTenantBadRequest{
-				Status: 400,
-				Type:   *aboutBlankURL,
-				Title:  err.Error(),
-			}, nil
-		}
-		if errors.Is(err, tenant.ErrSlugAlreadyExists) || errors.Is(err, registration.ErrRegistrationAlreadyExists) {
-			return &httpapi.RegisterTenantConflict{
-				Status: 409,
-				Type:   *aboutBlankURL,
-				Title:  "Tenant with this slug already exists",
-			}, nil
-		}
-		return nil, err
-	}
-
-	// Completed synchronously — return 201 with tenant
-	if result.Tenant != nil {
-		return toTenantResponse(result.Tenant), nil
-	}
-
-	// Deferred to worker — return 202 with status
-	return toRegistrationStatusResponse(result.Registration), nil
-}
-
-func (h *tenantHandler) GetRegistrationStatus(ctx context.Context, params httpapi.GetRegistrationStatusParams) (httpapi.GetRegistrationStatusRes, error) {
-	q := query.GetRegistrationStatusQuery{Slug: params.Slug}
-
-	reg, err := h.getRegStatusHandler.Handle(ctx, q)
-	if err != nil {
-		if errors.Is(err, registration.ErrRegistrationNotFound) {
-			return &httpapi.GetRegistrationStatusNotFound{
-				Status: 404,
-				Type:   *aboutBlankURL,
-				Title:  "Registration not found",
-			}, nil
-		}
-		return nil, err
-	}
-
-	return toRegistrationStatusResponse(reg), nil
-}
-
-func toRegistrationStatusResponse(reg *registration.Registration) *httpapi.RegistrationStatusResponse {
-	resp := &httpapi.RegistrationStatusResponse{
-		Slug:   reg.Slug,
-		Status: httpapi.RegistrationStatusResponseStatus(reg.Status),
-	}
-	if reg.FailureReason != nil {
-		resp.FailureReason = httpapi.NewOptString(*reg.FailureReason)
-	}
-	return resp
 }

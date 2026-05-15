@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
@@ -49,7 +49,6 @@ func newLogtoClient(cfg Config, tokenSource oauth2.TokenSource, log *zap.Logger)
 func (c *logtoClient) CreateUser(ctx context.Context, params tenant.CreateUserParams) (string, error) {
 	body := map[string]any{
 		"primaryEmail": params.Email,
-		"username":     params.Email,
 		"password":     params.Password,
 		"name":         params.FirstName + " " + params.LastName,
 	}
@@ -90,7 +89,6 @@ func (c *logtoClient) handleUserConflict(ctx context.Context, params tenant.Crea
 
 	body := map[string]any{
 		"primaryEmail": params.Email,
-		"username":     params.Email,
 		"password":     params.Password,
 		"name":         params.FirstName + " " + params.LastName,
 	}

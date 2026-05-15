@@ -1,29 +1,27 @@
-package worker
+package registration
 
 import (
 	"context"
 	"time"
 
-	command "github.com/Sokol111/ecommerce-tenant-service/internal/application/command/tenant"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/registration"
 	"go.uber.org/zap"
 )
 
 const pollInterval = 10 * time.Second
 
-// RegistrationWorker polls for incomplete registrations and drives them to completion or rollback.
-type RegistrationWorker struct {
-	regRepo   registration.Repository
-	processor *command.SagaProcessor
+// Worker polls for incomplete registrations and drives them to completion or rollback.
+type Worker struct {
+	regRepo   Repository
+	processor *Processor
 	log       *zap.Logger
 }
 
-func NewRegistrationWorker(
-	regRepo registration.Repository,
-	processor *command.SagaProcessor,
+func NewWorker(
+	regRepo Repository,
+	processor *Processor,
 	log *zap.Logger,
-) *RegistrationWorker {
-	return &RegistrationWorker{
+) *Worker {
+	return &Worker{
 		regRepo:   regRepo,
 		processor: processor,
 		log:       log.Named("registration-worker"),
@@ -31,7 +29,7 @@ func NewRegistrationWorker(
 }
 
 // Run implements the worker.runnable interface.
-func (w *RegistrationWorker) Run(ctx context.Context) error {
+func (w *Worker) Run(ctx context.Context) error {
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 
@@ -45,7 +43,7 @@ func (w *RegistrationWorker) Run(ctx context.Context) error {
 	}
 }
 
-func (w *RegistrationWorker) processActionable(ctx context.Context) {
+func (w *Worker) processActionable(ctx context.Context) {
 	regs, err := w.regRepo.FindActionable(ctx)
 	if err != nil {
 		w.log.Error("failed to find actionable registrations", zap.Error(err))
@@ -60,17 +58,17 @@ func (w *RegistrationWorker) processActionable(ctx context.Context) {
 	}
 }
 
-func (w *RegistrationWorker) processOne(ctx context.Context, reg *registration.Registration) {
+func (w *Worker) processOne(ctx context.Context, reg *Registration) {
 	log := w.log.With(zap.String("slug", reg.Slug), zap.String("status", string(reg.Status)))
 
 	switch reg.Status {
-	case registration.StatusProvisioning:
+	case StatusProvisioning:
 		log.Debug("resuming registration saga")
 		if _, err := w.processor.Process(ctx, reg); err != nil {
 			log.Warn("saga step failed, will retry", zap.Error(err))
 		}
 
-	case registration.StatusCompensating:
+	case StatusCompensating:
 		log.Debug("compensating registration saga")
 		if err := w.processor.Compensate(ctx, reg); err != nil {
 			log.Warn("compensation step failed, will retry", zap.Error(err))

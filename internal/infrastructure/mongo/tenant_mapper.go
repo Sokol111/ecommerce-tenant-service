@@ -1,6 +1,6 @@
 package mongo
 
-import "github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
+import "github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 
 type tenantMapper struct{}
 

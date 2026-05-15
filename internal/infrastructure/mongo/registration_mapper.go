@@ -3,7 +3,7 @@ package mongo
 import (
 	"time"
 
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/registration"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/registration"
 )
 
 type registrationMapper struct{}

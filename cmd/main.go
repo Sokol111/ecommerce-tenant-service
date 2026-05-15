@@ -9,15 +9,14 @@ import (
 	commons_observability "github.com/Sokol111/ecommerce-commons/pkg/observability"
 	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commons_pprof "github.com/Sokol111/ecommerce-commons/pkg/pprof"
-	commons_security "github.com/Sokol111/ecommerce-commons/pkg/security"
+	commons_validation "github.com/Sokol111/ecommerce-commons/pkg/security/validation"
 	commons_swaggerui "github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/event"
 	internalhttp "github.com/Sokol111/ecommerce-tenant-service/internal/http"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/kafka"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/logto"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/messaging/kafka"
-	internalmongo "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/persistence/mongo"
+	internalmongo "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/mongo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -29,13 +28,12 @@ var AppModules = fx.Options(
 	commons_http.NewHTTPModule(),
 	commons_observability.NewObservabilityModule(),
 	commons_messaging.NewMessagingModule(),
-	commons_security.NewSecurityModule(),
+	commons_validation.NewModule(),
 	commons_pprof.NewPprofModule(),
 	commons_swaggerui.NewSwaggerModule(commons_swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
 
 	// Domain & Application
 	internalmongo.Module(),
-	event.Module(),
 	application.Module(),
 	kafka.Module(),
 	logto.Module(),

@@ -11,9 +11,6 @@ security:
   jwks:
     jwks-url: "http://logto:3001/oidc/jwks"
     audience: "https://api.sokolshop.com"
-  client-credentials:
-    client-id: "tenant-service-m2m"
-    token-url: "http://logto:3001/oidc/token"
 
 kafka:
   brokers: "redpanda:29092"
@@ -34,3 +31,4 @@ pprof:
 
 logto:
   base-url: "http://logto:3001"
+  token-url: "http://logto:3001/oidc/token"

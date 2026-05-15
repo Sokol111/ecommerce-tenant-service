@@ -1,4 +1,4 @@
-package tenant
+package registration
 
 import (
 	"context"
@@ -7,30 +7,28 @@ import (
 
 	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
 	"github.com/Sokol111/ecommerce-commons/pkg/messaging/patterns/outbox"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/registration"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/event"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/logto"
 	"go.uber.org/zap"
 )
 
-// SagaProcessor executes and compensates registration saga steps.
-type SagaProcessor struct {
+// Processor executes and compensates registration saga steps.
+type Processor struct {
 	tenantRepo   tenant.Repository
-	regRepo      registration.Repository
+	regRepo      Repository
 	outbox       outbox.Outbox
-	eventFactory event.TenantEventFactory
+	eventFactory tenant.TenantEventFactory
 	idp          tenant.IdentityProvider
 }
 
-func NewSagaProcessor(
+func NewProcessor(
 	tenantRepo tenant.Repository,
-	regRepo registration.Repository,
+	regRepo Repository,
 	outbox outbox.Outbox,
-	eventFactory event.TenantEventFactory,
+	eventFactory tenant.TenantEventFactory,
 	idp tenant.IdentityProvider,
-) *SagaProcessor {
-	return &SagaProcessor{
+) *Processor {
+	return &Processor{
 		tenantRepo:   tenantRepo,
 		regRepo:      regRepo,
 		outbox:       outbox,
@@ -40,7 +38,7 @@ func NewSagaProcessor(
 }
 
 // Process executes the registration saga steps forward. Returns the tenant on success.
-func (p *SagaProcessor) Process(ctx context.Context, reg *registration.Registration) (*tenant.Tenant, error) {
+func (p *Processor) Process(ctx context.Context, reg *Registration) (*tenant.Tenant, error) {
 	log := logger.Get(ctx)
 
 	if err := p.stepCreateTenant(ctx, reg, log); err != nil {
@@ -73,7 +71,7 @@ func (p *SagaProcessor) Process(ctx context.Context, reg *registration.Registrat
 	return t, nil
 }
 
-func (p *SagaProcessor) stepCreateTenant(ctx context.Context, reg *registration.Registration, log *zap.Logger) error {
+func (p *Processor) stepCreateTenant(ctx context.Context, reg *Registration, log *zap.Logger) error {
 	if reg.TenantID != nil {
 		return nil
 	}
@@ -90,7 +88,7 @@ func (p *SagaProcessor) stepCreateTenant(ctx context.Context, reg *registration.
 	return nil
 }
 
-func (p *SagaProcessor) stepSetTenantOnUser(ctx context.Context, reg *registration.Registration, log *zap.Logger) error {
+func (p *Processor) stepSetTenantOnUser(ctx context.Context, reg *Registration, log *zap.Logger) error {
 	if reg.TenantSet {
 		return nil
 	}
@@ -106,7 +104,7 @@ func (p *SagaProcessor) stepSetTenantOnUser(ctx context.Context, reg *registrati
 	return nil
 }
 
-func (p *SagaProcessor) stepAssignRole(ctx context.Context, reg *registration.Registration, log *zap.Logger) error {
+func (p *Processor) stepAssignRole(ctx context.Context, reg *Registration, log *zap.Logger) error {
 	if reg.RoleAssigned {
 		return nil
 	}
@@ -122,7 +120,7 @@ func (p *SagaProcessor) stepAssignRole(ctx context.Context, reg *registration.Re
 	return nil
 }
 
-func (p *SagaProcessor) stepPublishEvent(ctx context.Context, reg *registration.Registration, log *zap.Logger) error {
+func (p *Processor) stepPublishEvent(ctx context.Context, reg *Registration, log *zap.Logger) error {
 	if reg.EventPublished {
 		return nil
 	}
@@ -136,7 +134,7 @@ func (p *SagaProcessor) stepPublishEvent(ctx context.Context, reg *registration.
 }
 
 // Compensate reverses the registration saga steps (cleanup).
-func (p *SagaProcessor) Compensate(ctx context.Context, reg *registration.Registration) error {
+func (p *Processor) Compensate(ctx context.Context, reg *Registration) error {
 	log := logger.Get(ctx)
 
 	// Reverse order: delete user first, then tenant
@@ -177,7 +175,7 @@ func (p *SagaProcessor) Compensate(ctx context.Context, reg *registration.Regist
 	return nil
 }
 
-func (p *SagaProcessor) createTenant(ctx context.Context, reg *registration.Registration) (*tenant.Tenant, error) {
+func (p *Processor) createTenant(ctx context.Context, reg *Registration) (*tenant.Tenant, error) {
 	t, err := tenant.NewTenant(reg.Slug, reg.Name)
 	if err != nil {
 		return nil, err
@@ -190,7 +188,7 @@ func (p *SagaProcessor) createTenant(ctx context.Context, reg *registration.Regi
 	return t, nil
 }
 
-func (p *SagaProcessor) publishTenantEvent(ctx context.Context, reg *registration.Registration) error {
+func (p *Processor) publishTenantEvent(ctx context.Context, reg *Registration) error {
 	t, err := p.tenantRepo.FindBySlug(ctx, reg.Slug)
 	if err != nil {
 		return fmt.Errorf("failed to load tenant for event: %w", err)
@@ -206,7 +204,7 @@ func (p *SagaProcessor) publishTenantEvent(ctx context.Context, reg *registratio
 	return nil
 }
 
-func (p *SagaProcessor) handleStepFailure(ctx context.Context, reg *registration.Registration, err error, log *zap.Logger) {
+func (p *Processor) handleStepFailure(ctx context.Context, reg *Registration, err error, log *zap.Logger) {
 	if isPermanentError(err) {
 		log.Warn("permanent error in registration saga, compensating",
 			zap.String("slug", reg.Slug), zap.Error(err))

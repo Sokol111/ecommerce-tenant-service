@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	commonsmongo "github.com/Sokol111/ecommerce-commons/pkg/persistence/mongo"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/domain/tenant"
+	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
