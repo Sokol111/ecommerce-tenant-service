@@ -1,6 +1,6 @@
 module github.com/Sokol111/ecommerce-tenant-service
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/Sokol111/ecommerce-commons v0.7.1
