@@ -30,7 +30,7 @@ var AppModules = fx.Options(
 	commons_messaging.NewMessagingModule(),
 	commons_validation.NewModule(),
 	commons_pprof.NewPprofModule(),
-	commons_swaggerui.NewSwaggerModule(commons_swaggerui.SwaggerConfig{OpenAPIContent: httpapi.OpenAPIDoc}),
+	commons_swaggerui.NewSwaggerModule(),
 
 	// Domain & Application
 	internalmongo.Module(),
@@ -39,6 +39,7 @@ var AppModules = fx.Options(
 	logto.Module(),
 
 	// HTTP
+	httpapi.ServerModule(),
 	internalhttp.Module(),
 )
 
