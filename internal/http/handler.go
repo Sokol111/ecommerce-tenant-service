@@ -19,16 +19,34 @@ func mustParseURL(rawURL string) *url.URL {
 }
 
 type tenantHandler struct {
-	tenants       tenant.TenantService
-	registrations registration.RegistrationService
+	createTenant    tenant.CreateTenantHandler
+	updateTenant    tenant.UpdateTenantHandler
+	deleteTenant    tenant.DeleteTenantHandler
+	getBySlug       tenant.GetBySlugHandler
+	getList         tenant.GetListHandler
+	getEnabledSlugs tenant.GetEnabledSlugsHandler
+	register        registration.RegisterHandler
+	getStatus       registration.GetStatusHandler
 }
 
 func newTenantHandler(
-	tenants tenant.TenantService,
-	registrations registration.RegistrationService,
+	createTenant tenant.CreateTenantHandler,
+	updateTenant tenant.UpdateTenantHandler,
+	deleteTenant tenant.DeleteTenantHandler,
+	getBySlug tenant.GetBySlugHandler,
+	getList tenant.GetListHandler,
+	getEnabledSlugs tenant.GetEnabledSlugsHandler,
+	register registration.RegisterHandler,
+	getStatus registration.GetStatusHandler,
 ) *tenantHandler {
 	return &tenantHandler{
-		tenants:       tenants,
-		registrations: registrations,
+		createTenant:    createTenant,
+		updateTenant:    updateTenant,
+		deleteTenant:    deleteTenant,
+		getBySlug:       getBySlug,
+		getList:         getList,
+		getEnabledSlugs: getEnabledSlugs,
+		register:        register,
+		getStatus:       getStatus,
 	}
 }

@@ -20,7 +20,7 @@ func (h *tenantHandler) RegisterTenant(ctx context.Context, req *httpapi.Registe
 		LastName:  req.LastName,
 	}
 
-	result, err := h.registrations.Register(ctx, cmd)
+	result, err := h.register.Handle(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, tenant.ErrInvalidTenantData) {
 			return &httpapi.RegisterTenantBadRequest{
@@ -51,7 +51,7 @@ func (h *tenantHandler) RegisterTenant(ctx context.Context, req *httpapi.Registe
 func (h *tenantHandler) GetRegistrationStatus(ctx context.Context, params httpapi.GetRegistrationStatusParams) (httpapi.GetRegistrationStatusRes, error) {
 	q := registration.GetStatusQuery{Slug: params.Slug}
 
-	reg, err := h.registrations.GetStatus(ctx, q)
+	reg, err := h.getStatus.Handle(ctx, q)
 	if err != nil {
 		if errors.Is(err, registration.ErrRegistrationNotFound) {
 			return &httpapi.GetRegistrationStatusNotFound{

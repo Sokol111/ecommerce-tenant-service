@@ -18,8 +18,33 @@ type UpdateCommand struct {
 	Enabled bool
 }
 
-func (s *tenantService) Update(ctx context.Context, cmd UpdateCommand) (*Tenant, error) {
-	t, err := s.repo.FindBySlug(ctx, cmd.Slug)
+type UpdateTenantHandler interface {
+	Handle(ctx context.Context, cmd UpdateCommand) (*Tenant, error)
+}
+
+type updateTenantHandler struct {
+	repo         Repository
+	outbox       outbox.Outbox
+	txManager    mongo.TxManager
+	eventFactory TenantEventFactory
+}
+
+func NewUpdateTenantHandler(
+	repo Repository,
+	outbox outbox.Outbox,
+	txManager mongo.TxManager,
+	eventFactory TenantEventFactory,
+) UpdateTenantHandler {
+	return &updateTenantHandler{
+		repo:         repo,
+		outbox:       outbox,
+		txManager:    txManager,
+		eventFactory: eventFactory,
+	}
+}
+
+func (h *updateTenantHandler) Handle(ctx context.Context, cmd UpdateCommand) (*Tenant, error) {
+	t, err := h.repo.FindBySlug(ctx, cmd.Slug)
 	if err != nil {
 		if errors.Is(err, mongo.ErrEntityNotFound) {
 			return nil, mongo.ErrEntityNotFound
@@ -36,20 +61,20 @@ func (s *tenantService) Update(ctx context.Context, cmd UpdateCommand) (*Tenant,
 		return nil, err
 	}
 
-	msg := s.eventFactory.NewTenantUpdatedOutboxMessage(ctx, t)
+	msg := h.eventFactory.NewTenantUpdatedOutboxMessage(ctx, t)
 
 	type updateResult struct {
 		Tenant *Tenant
 		Send   outbox.SendFunc
 	}
 
-	res, err := mongo.WithTransaction(ctx, s.txManager, func(txCtx context.Context) (*updateResult, error) {
-		updated, updateErr := s.repo.Update(txCtx, t)
+	res, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (*updateResult, error) {
+		updated, updateErr := h.repo.Update(txCtx, t)
 		if updateErr != nil {
 			return nil, fmt.Errorf("failed to update tenant: %w", updateErr)
 		}
 
-		send, createOutboxErr := s.outbox.Create(txCtx, msg)
+		send, createOutboxErr := h.outbox.Create(txCtx, msg)
 		if createOutboxErr != nil {
 			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}

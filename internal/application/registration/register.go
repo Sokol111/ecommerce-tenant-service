@@ -23,15 +23,40 @@ type RegisterResult struct {
 	Registration *Registration
 }
 
-func (s *registrationService) Register(ctx context.Context, cmd RegisterCommand) (*RegisterResult, error) {
+type RegisterHandler interface {
+	Handle(ctx context.Context, cmd RegisterCommand) (*RegisterResult, error)
+}
+
+type registerHandler struct {
+	tenantRepo tenant.Repository
+	regRepo    Repository
+	idp        tenant.IdentityProvider
+	processor  *Processor
+}
+
+func NewRegisterHandler(
+	tenantRepo tenant.Repository,
+	regRepo Repository,
+	idp tenant.IdentityProvider,
+	processor *Processor,
+) RegisterHandler {
+	return &registerHandler{
+		tenantRepo: tenantRepo,
+		regRepo:    regRepo,
+		idp:        idp,
+		processor:  processor,
+	}
+}
+
+func (h *registerHandler) Handle(ctx context.Context, cmd RegisterCommand) (*RegisterResult, error) {
 	log := logger.Get(ctx)
 
-	if err := s.checkSlugAvailability(ctx, cmd.Slug); err != nil {
+	if err := h.checkSlugAvailability(ctx, cmd.Slug); err != nil {
 		return nil, err
 	}
 
 	// Create user in Logto immediately (password used and discarded)
-	logtoUserID, err := s.idp.CreateUser(ctx, tenant.CreateUserParams{
+	logtoUserID, err := h.idp.CreateUser(ctx, tenant.CreateUserParams{
 		Email:     cmd.Email,
 		Password:  cmd.Password,
 		FirstName: cmd.FirstName,
@@ -44,19 +69,19 @@ func (s *registrationService) Register(ctx context.Context, cmd RegisterCommand)
 	// Create registration (user already exists in Logto)
 	reg, err := New(cmd.Slug, cmd.Name, cmd.Email, cmd.FirstName, cmd.LastName, logtoUserID)
 	if err != nil {
-		s.compensateUser(ctx, log, logtoUserID)
+		h.compensateUser(ctx, log, logtoUserID)
 		return nil, err
 	}
 
-	if err := s.regRepo.Insert(ctx, reg); err != nil {
-		s.compensateUser(ctx, log, logtoUserID)
+	if err := h.regRepo.Insert(ctx, reg); err != nil {
+		h.compensateUser(ctx, log, logtoUserID)
 		return nil, fmt.Errorf("failed to create registration: %w", err)
 	}
 
 	log.Debug("registration created, attempting inline processing", zap.String("slug", cmd.Slug))
 
 	// Try fast path (inline saga)
-	t, err := s.processor.Process(ctx, reg)
+	t, err := h.processor.Process(ctx, reg)
 	if err != nil {
 		// Saga didn't complete inline — worker will pick it up
 		log.Warn("registration deferred to worker",
@@ -69,8 +94,8 @@ func (s *registrationService) Register(ctx context.Context, cmd RegisterCommand)
 	return &RegisterResult{Tenant: t, Registration: reg}, nil
 }
 
-func (s *registrationService) checkSlugAvailability(ctx context.Context, slug string) error {
-	exists, err := s.tenantRepo.Exists(ctx, slug)
+func (h *registerHandler) checkSlugAvailability(ctx context.Context, slug string) error {
+	exists, err := h.tenantRepo.Exists(ctx, slug)
 	if err != nil {
 		return fmt.Errorf("failed to check tenant existence: %w", err)
 	}
@@ -78,7 +103,7 @@ func (s *registrationService) checkSlugAvailability(ctx context.Context, slug st
 		return tenant.ErrSlugAlreadyExists
 	}
 
-	regExists, err := s.regRepo.ExistsBySlug(ctx, slug)
+	regExists, err := h.regRepo.ExistsBySlug(ctx, slug)
 	if err != nil {
 		return fmt.Errorf("failed to check registration existence: %w", err)
 	}
@@ -89,8 +114,8 @@ func (s *registrationService) checkSlugAvailability(ctx context.Context, slug st
 	return nil
 }
 
-func (s *registrationService) compensateUser(ctx context.Context, log *zap.Logger, logtoUserID string) {
-	if err := s.idp.DeleteUser(ctx, logtoUserID); err != nil {
+func (h *registerHandler) compensateUser(ctx context.Context, log *zap.Logger, logtoUserID string) {
+	if err := h.idp.DeleteUser(ctx, logtoUserID); err != nil {
 		log.Error("failed to delete orphaned Logto user, manual cleanup required",
 			zap.String("logtoUserID", logtoUserID),
 			zap.Error(err))

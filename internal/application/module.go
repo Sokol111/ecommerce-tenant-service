@@ -9,10 +9,18 @@ import (
 
 func Module() fx.Option {
 	return fx.Options(
-		fx.Provide(tenant.NewTenantService),
+		fx.Provide(
+			tenant.NewCreateTenantHandler,
+			tenant.NewUpdateTenantHandler,
+			tenant.NewDeleteTenantHandler,
+			tenant.NewGetBySlugHandler,
+			tenant.NewGetListHandler,
+			tenant.NewGetEnabledSlugsHandler,
+		),
 		fx.Provide(
 			registration.NewProcessor,
-			registration.NewRegistrationService,
+			registration.NewRegisterHandler,
+			registration.NewGetStatusHandler,
 			registration.NewWorker,
 		),
 		fx.Invoke(worker.RunWorker[*registration.Worker]("registration-worker", worker.WithReady())),

@@ -15,8 +15,33 @@ type CreateCommand struct {
 	Name string
 }
 
-func (s *tenantService) Create(ctx context.Context, cmd CreateCommand) (*Tenant, error) {
-	exists, err := s.repo.Exists(ctx, cmd.Slug)
+type CreateTenantHandler interface {
+	Handle(ctx context.Context, cmd CreateCommand) (*Tenant, error)
+}
+
+type createTenantHandler struct {
+	repo         Repository
+	outbox       outbox.Outbox
+	txManager    mongo.TxManager
+	eventFactory TenantEventFactory
+}
+
+func NewCreateTenantHandler(
+	repo Repository,
+	outbox outbox.Outbox,
+	txManager mongo.TxManager,
+	eventFactory TenantEventFactory,
+) CreateTenantHandler {
+	return &createTenantHandler{
+		repo:         repo,
+		outbox:       outbox,
+		txManager:    txManager,
+		eventFactory: eventFactory,
+	}
+}
+
+func (h *createTenantHandler) Handle(ctx context.Context, cmd CreateCommand) (*Tenant, error) {
+	exists, err := h.repo.Exists(ctx, cmd.Slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check tenant existence: %w", err)
 	}
@@ -29,20 +54,20 @@ func (s *tenantService) Create(ctx context.Context, cmd CreateCommand) (*Tenant,
 		return nil, err
 	}
 
-	msg := s.eventFactory.NewTenantUpdatedOutboxMessage(ctx, t)
+	msg := h.eventFactory.NewTenantUpdatedOutboxMessage(ctx, t)
 
 	type createResult struct {
 		Tenant *Tenant
 		Send   outbox.SendFunc
 	}
 
-	res, err := mongo.WithTransaction(ctx, s.txManager, func(txCtx context.Context) (*createResult, error) {
-		err = s.repo.Insert(txCtx, t)
+	res, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (*createResult, error) {
+		err = h.repo.Insert(txCtx, t)
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert tenant: %w", err)
 		}
 
-		send, createOutboxErr := s.outbox.Create(txCtx, msg)
+		send, createOutboxErr := h.outbox.Create(txCtx, msg)
 		if createOutboxErr != nil {
 			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}

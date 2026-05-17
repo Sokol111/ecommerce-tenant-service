@@ -30,7 +30,7 @@ func (h *tenantHandler) CreateTenant(ctx context.Context, req *httpapi.CreateTen
 		Name: req.Name,
 	}
 
-	created, err := h.tenants.Create(ctx, cmd)
+	created, err := h.createTenant.Handle(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, tenant.ErrInvalidTenantData) {
 			return &httpapi.CreateTenantBadRequest{
@@ -60,7 +60,7 @@ func (h *tenantHandler) UpdateTenant(ctx context.Context, req *httpapi.UpdateTen
 		Enabled: req.Enabled,
 	}
 
-	updated, err := h.tenants.Update(ctx, cmd)
+	updated, err := h.updateTenant.Handle(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, tenant.ErrInvalidTenantData) {
 			return &httpapi.UpdateTenantBadRequest{
@@ -92,7 +92,7 @@ func (h *tenantHandler) UpdateTenant(ctx context.Context, req *httpapi.UpdateTen
 func (h *tenantHandler) GetTenantBySlug(ctx context.Context, params httpapi.GetTenantBySlugParams) (httpapi.GetTenantBySlugRes, error) {
 	q := tenant.GetBySlugQuery{Slug: params.Slug}
 
-	found, err := h.tenants.GetBySlug(ctx, q)
+	found, err := h.getBySlug.Handle(ctx, q)
 	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.GetTenantBySlugNotFound{
 			Status: 404,
@@ -110,7 +110,7 @@ func (h *tenantHandler) GetTenantBySlug(ctx context.Context, params httpapi.GetT
 func (h *tenantHandler) DeleteTenant(ctx context.Context, params httpapi.DeleteTenantParams) (httpapi.DeleteTenantRes, error) {
 	cmd := tenant.DeleteCommand{Slug: params.Slug}
 
-	err := h.tenants.Delete(ctx, cmd)
+	err := h.deleteTenant.Handle(ctx, cmd)
 	if errors.Is(err, mongo.ErrEntityNotFound) {
 		return &httpapi.DeleteTenantNotFound{
 			Status: 404,
@@ -147,7 +147,7 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, params httpapi.GetTen
 		Order:   string(params.Order.Or(httpapi.GetTenantListOrderDesc)),
 	}
 
-	result, err := h.tenants.GetList(ctx, q)
+	result, err := h.getList.Handle(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, params httpapi.GetTen
 }
 
 func (h *tenantHandler) GetEnabledTenantSlugs(ctx context.Context) (httpapi.GetEnabledTenantSlugsRes, error) {
-	slugs, err := h.tenants.GetEnabledSlugs(ctx)
+	slugs, err := h.getEnabledSlugs.Handle(ctx)
 	if err != nil {
 		return nil, err
 	}

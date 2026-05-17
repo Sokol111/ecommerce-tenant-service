@@ -20,7 +20,19 @@ type ListResult struct {
 	Total int64
 }
 
-func (s *tenantService) GetList(ctx context.Context, query GetListQuery) (*ListResult, error) {
+type GetListHandler interface {
+	Handle(ctx context.Context, query GetListQuery) (*ListResult, error)
+}
+
+type getListHandler struct {
+	repo Repository
+}
+
+func NewGetListHandler(repo Repository) GetListHandler {
+	return &getListHandler{repo: repo}
+}
+
+func (h *getListHandler) Handle(ctx context.Context, query GetListQuery) (*ListResult, error) {
 	listQuery := ListQuery{
 		Page:    query.Page,
 		Size:    query.Size,
@@ -29,7 +41,7 @@ func (s *tenantService) GetList(ctx context.Context, query GetListQuery) (*ListR
 		Order:   query.Order,
 	}
 
-	result, err := s.repo.FindList(ctx, listQuery)
+	result, err := h.repo.FindList(ctx, listQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tenants list: %w", err)
 	}

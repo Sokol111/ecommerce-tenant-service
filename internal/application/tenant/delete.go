@@ -14,8 +14,33 @@ type DeleteCommand struct {
 	Slug string
 }
 
-func (s *tenantService) Delete(ctx context.Context, cmd DeleteCommand) error {
-	t, err := s.repo.FindBySlug(ctx, cmd.Slug)
+type DeleteTenantHandler interface {
+	Handle(ctx context.Context, cmd DeleteCommand) error
+}
+
+type deleteTenantHandler struct {
+	repo         Repository
+	outbox       outbox.Outbox
+	txManager    mongo.TxManager
+	eventFactory TenantEventFactory
+}
+
+func NewDeleteTenantHandler(
+	repo Repository,
+	outbox outbox.Outbox,
+	txManager mongo.TxManager,
+	eventFactory TenantEventFactory,
+) DeleteTenantHandler {
+	return &deleteTenantHandler{
+		repo:         repo,
+		outbox:       outbox,
+		txManager:    txManager,
+		eventFactory: eventFactory,
+	}
+}
+
+func (h *deleteTenantHandler) Handle(ctx context.Context, cmd DeleteCommand) error {
+	t, err := h.repo.FindBySlug(ctx, cmd.Slug)
 	if err != nil {
 		return fmt.Errorf("failed to get tenant: %w", err)
 	}
@@ -24,15 +49,15 @@ func (s *tenantService) Delete(ctx context.Context, cmd DeleteCommand) error {
 		return ErrTenantNotDisabled
 	}
 
-	msg := s.eventFactory.NewTenantDeletedOutboxMessage(ctx, t.Slug)
+	msg := h.eventFactory.NewTenantDeletedOutboxMessage(ctx, t.Slug)
 
-	send, err := mongo.WithTransaction(ctx, s.txManager, func(txCtx context.Context) (outbox.SendFunc, error) {
-		err = s.repo.Delete(txCtx, t.ID)
+	send, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (outbox.SendFunc, error) {
+		err = h.repo.Delete(txCtx, t.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to delete tenant: %w", err)
 		}
 
-		createdSend, createOutboxErr := s.outbox.Create(txCtx, msg)
+		createdSend, createOutboxErr := h.outbox.Create(txCtx, msg)
 		if createOutboxErr != nil {
 			return nil, fmt.Errorf("failed to create outbox: %w", createOutboxErr)
 		}
