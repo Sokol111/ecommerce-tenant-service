@@ -143,7 +143,7 @@ func (p *Processor) Compensate(ctx context.Context, reg *Registration) error {
 			log.Error("compensation: failed to delete user, scheduling retry",
 				zap.String("slug", reg.Slug), zap.Error(err))
 			reg.ScheduleRetry()
-			_ = p.regRepo.Update(ctx, reg)
+			_ = p.regRepo.Update(ctx, reg) //nolint:errcheck // best-effort in compensation path
 			return err
 		}
 		reg.ClearLogtoUser()
@@ -157,7 +157,7 @@ func (p *Processor) Compensate(ctx context.Context, reg *Registration) error {
 			log.Error("compensation: failed to delete tenant, scheduling retry",
 				zap.String("slug", reg.Slug), zap.Error(err))
 			reg.ScheduleRetry()
-			_ = p.regRepo.Update(ctx, reg)
+			_ = p.regRepo.Update(ctx, reg) //nolint:errcheck // best-effort in compensation path
 			return err
 		}
 		reg.ClearTenant()
@@ -214,7 +214,7 @@ func (p *Processor) handleStepFailure(ctx context.Context, reg *Registration, er
 			zap.String("slug", reg.Slug), zap.Error(err))
 		reg.ScheduleRetry()
 	}
-	_ = p.regRepo.Update(ctx, reg)
+	_ = p.regRepo.Update(ctx, reg) //nolint:errcheck // best-effort in failure handler
 }
 
 func isPermanentError(err error) bool {

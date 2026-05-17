@@ -73,7 +73,7 @@ func (h *registerHandler) Handle(ctx context.Context, cmd RegisterCommand) (*Reg
 		return nil, err
 	}
 
-	if err := h.regRepo.Insert(ctx, reg); err != nil {
+	if err = h.regRepo.Insert(ctx, reg); err != nil {
 		h.compensateUser(ctx, log, logtoUserID)
 		return nil, fmt.Errorf("failed to create registration: %w", err)
 	}

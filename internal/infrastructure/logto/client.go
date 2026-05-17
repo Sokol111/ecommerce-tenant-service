@@ -245,7 +245,7 @@ func (c *logtoClient) doRequest(ctx context.Context, method, path string, body a
 	if err != nil {
 		return 0, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // response body close error is not actionable
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -253,7 +253,7 @@ func (c *logtoClient) doRequest(ctx context.Context, method, path string, body a
 	}
 
 	if resp.StatusCode >= 400 && resp.StatusCode != http.StatusConflict && resp.StatusCode != http.StatusNotFound {
-		return resp.StatusCode, fmt.Errorf("Logto API error: status=%d body=%s", resp.StatusCode, string(respBody))
+		return resp.StatusCode, fmt.Errorf("logto API error: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 
 	if result != nil && len(respBody) > 0 && resp.StatusCode < 400 {
