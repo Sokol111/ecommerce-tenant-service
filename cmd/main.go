@@ -14,6 +14,7 @@ import (
 	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application"
 	internalhttp "github.com/Sokol111/ecommerce-tenant-service/internal/http"
+	internalk8s "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/k8s"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/kafka"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/logto"
 	internalmongo "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/mongo"
@@ -37,6 +38,7 @@ var AppModules = fx.Options(
 	application.Module(),
 	kafka.Module(),
 	logto.Module(),
+	internalk8s.Module(),
 
 	// HTTP
 	httpapi.ServerModule(),

@@ -30,6 +30,7 @@ type Registration struct {
 	TenantSet      bool
 	RoleAssigned   bool
 	EventPublished bool
+	CatalogSeeded  bool
 
 	FailureReason *string
 	RetryCount    int
@@ -67,7 +68,7 @@ func Reconstruct(
 	id, slug string, status Status,
 	name, email, firstName, lastName string,
 	tenantID, logtoUserID *string,
-	tenantSet, roleAssigned, eventPublished bool,
+	tenantSet, roleAssigned, eventPublished, catalogSeeded bool,
 	failureReason *string,
 	retryCount int, nextRetryAt *time.Time,
 	createdAt time.Time, completedAt *time.Time,
@@ -86,6 +87,7 @@ func Reconstruct(
 		TenantSet:      tenantSet,
 		RoleAssigned:   roleAssigned,
 		EventPublished: eventPublished,
+		CatalogSeeded:  catalogSeeded,
 		FailureReason:  failureReason,
 		RetryCount:     retryCount,
 		NextRetryAt:    nextRetryAt,
@@ -109,6 +111,10 @@ func (r *Registration) SetRoleAssigned() {
 
 func (r *Registration) SetEventPublished() {
 	r.EventPublished = true
+}
+
+func (r *Registration) SetCatalogSeeded() {
+	r.CatalogSeeded = true
 }
 
 func (r *Registration) MarkCompleted() {

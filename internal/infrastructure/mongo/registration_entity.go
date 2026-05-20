@@ -15,6 +15,7 @@ type registrationEntity struct {
 	TenantSet      bool       `bson:"tenantSet"`
 	RoleAssigned   bool       `bson:"roleAssigned"`
 	EventPublished bool       `bson:"eventPublished"`
+	CatalogSeeded  bool       `bson:"catalogSeeded"`
 	FailureReason  *string    `bson:"failureReason,omitempty"`
 	RetryCount     int        `bson:"retryCount"`
 	NextRetryAt    *time.Time `bson:"nextRetryAt,omitempty"`

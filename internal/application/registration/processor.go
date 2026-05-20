@@ -14,11 +14,12 @@ import (
 
 // Processor executes and compensates registration saga steps.
 type Processor struct {
-	tenantRepo   tenant.Repository
-	regRepo      Repository
-	outbox       outbox.Outbox
-	eventFactory tenant.TenantEventFactory
-	idp          tenant.IdentityProvider
+	tenantRepo    tenant.Repository
+	regRepo       Repository
+	outbox        outbox.Outbox
+	eventFactory  tenant.TenantEventFactory
+	idp           tenant.IdentityProvider
+	catalogSeeder CatalogSeeder
 }
 
 func NewProcessor(
@@ -27,13 +28,15 @@ func NewProcessor(
 	outbox outbox.Outbox,
 	eventFactory tenant.TenantEventFactory,
 	idp tenant.IdentityProvider,
+	catalogSeeder CatalogSeeder,
 ) *Processor {
 	return &Processor{
-		tenantRepo:   tenantRepo,
-		regRepo:      regRepo,
-		outbox:       outbox,
-		eventFactory: eventFactory,
-		idp:          idp,
+		tenantRepo:    tenantRepo,
+		regRepo:       regRepo,
+		outbox:        outbox,
+		eventFactory:  eventFactory,
+		idp:           idp,
+		catalogSeeder: catalogSeeder,
 	}
 }
 
@@ -54,6 +57,10 @@ func (p *Processor) Process(ctx context.Context, reg *Registration) (*tenant.Ten
 	}
 
 	if err := p.stepPublishEvent(ctx, reg, log); err != nil {
+		return nil, err
+	}
+
+	if err := p.stepSeedCatalog(ctx, reg, log); err != nil {
 		return nil, err
 	}
 
@@ -130,6 +137,26 @@ func (p *Processor) stepPublishEvent(ctx context.Context, reg *Registration, log
 		return err
 	}
 	reg.SetEventPublished()
+	return nil
+}
+
+func (p *Processor) stepSeedCatalog(ctx context.Context, reg *Registration, log *zap.Logger) error {
+	if reg.CatalogSeeded {
+		return nil
+	}
+
+	if err := p.catalogSeeder.SeedTenant(ctx, reg.Slug); err != nil {
+		// Only schedule retry, never compensate — seeding is non-critical.
+		log.Warn("failed to trigger catalog seeding, scheduling retry",
+			zap.String("slug", reg.Slug), zap.Error(err))
+		reg.ScheduleRetry()
+		_ = p.regRepo.Update(ctx, reg) //nolint:errcheck // best-effort
+		return err
+	}
+	reg.SetCatalogSeeded()
+	if err := p.regRepo.Update(ctx, reg); err != nil {
+		return fmt.Errorf("failed to persist catalog-seeded: %w", err)
+	}
 	return nil
 }
 
