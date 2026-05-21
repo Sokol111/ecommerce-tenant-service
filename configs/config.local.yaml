@@ -34,5 +34,5 @@ logto:
   token-url: "http://logto:3001/oidc/token"
 
 k8s:
-  namespace: "default"
+  namespace: "dev"
   cronjob-name: "ecommerce-tenant-service-seeder"
