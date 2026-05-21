@@ -8,7 +8,6 @@ import (
 	"github.com/Sokol111/ecommerce-commons/pkg/core/logger"
 	"github.com/Sokol111/ecommerce-commons/pkg/messaging/patterns/outbox"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application/tenant"
-	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/logto"
 	"go.uber.org/zap"
 )
 
@@ -245,7 +244,7 @@ func (p *Processor) handleStepFailure(ctx context.Context, reg *Registration, er
 }
 
 func isPermanentError(err error) bool {
-	return errors.Is(err, logto.ErrUserAlreadyExists) ||
+	return errors.Is(err, tenant.ErrUserAlreadyExists) ||
 		errors.Is(err, tenant.ErrSlugAlreadyExists) ||
 		errors.Is(err, tenant.ErrInvalidTenantData)
 }

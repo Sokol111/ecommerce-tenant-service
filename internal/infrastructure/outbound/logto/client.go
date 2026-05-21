@@ -15,11 +15,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Errors returned by the Logto adapter.
-var (
-	ErrUserAlreadyExists = fmt.Errorf("user already exists in identity provider")
-)
-
 type logtoClient struct {
 	baseURL     string
 	tokenSource oauth2.TokenSource
@@ -78,7 +73,7 @@ func (c *logtoClient) handleUserConflict(ctx context.Context, params tenant.Crea
 	}
 
 	if hasTenant {
-		return "", ErrUserAlreadyExists
+		return "", tenant.ErrUserAlreadyExists
 	}
 
 	// Orphaned user — delete and recreate
