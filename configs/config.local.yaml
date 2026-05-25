@@ -25,9 +25,9 @@ observability:
   metrics:
     enabled: false
 
-pprof:
+pyroscope:
   enabled: true
-  port: 6060
+  endpoint: "http://pyroscope:4040"
 
 logto:
   base-url: "http://logto:3001"
