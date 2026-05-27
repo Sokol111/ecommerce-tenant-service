@@ -20,7 +20,9 @@ func Module() fx.Option {
 
 func provideConfig(k *koanf.Koanf) Config {
 	var cfg Config
-	_ = k.Unmarshal("k8s", &cfg)
+	if err := k.Unmarshal("k8s", &cfg); err != nil {
+		cfg = Config{}
+	}
 	return cfg
 }
 
