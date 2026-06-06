@@ -10,13 +10,14 @@ func newTenantMapper() *tenantMapper {
 
 func (m *tenantMapper) ToEntity(t *tenant.Tenant) *tenantEntity {
 	return &tenantEntity{
-		ID:         t.ID,
-		Slug:       t.Slug,
-		Version:    t.Version,
-		Name:       t.Name,
-		Enabled:    t.Enabled,
-		CreatedAt:  t.CreatedAt,
-		ModifiedAt: t.ModifiedAt,
+		ID:          t.ID,
+		Slug:        t.Slug,
+		Version:     t.Version,
+		Name:        t.Name,
+		Enabled:     t.Enabled,
+		OwnerUserID: t.OwnerUserID,
+		CreatedAt:   t.CreatedAt,
+		ModifiedAt:  t.ModifiedAt,
 	}
 }
 
@@ -27,6 +28,7 @@ func (m *tenantMapper) ToDomain(e *tenantEntity) *tenant.Tenant {
 		e.Version,
 		e.Name,
 		e.Enabled,
+		e.OwnerUserID,
 		e.CreatedAt.UTC(),
 		e.ModifiedAt.UTC(),
 	)

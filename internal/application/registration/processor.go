@@ -202,7 +202,7 @@ func (p *Processor) Compensate(ctx context.Context, reg *Registration) error {
 }
 
 func (p *Processor) createTenant(ctx context.Context, reg *Registration) (*tenant.Tenant, error) {
-	t, err := tenant.NewTenant(reg.Slug, reg.Name)
+	t, err := tenant.NewTenant(reg.Slug, reg.Name, *reg.LogtoUserID)
 	if err != nil {
 		return nil, err
 	}

@@ -49,7 +49,7 @@ func (h *createTenantHandler) Handle(ctx context.Context, cmd CreateCommand) (*T
 		return nil, ErrSlugAlreadyExists
 	}
 
-	t, err := NewTenant(cmd.Slug, cmd.Name)
+	t, err := NewTenant(cmd.Slug, cmd.Name, "")
 	if err != nil {
 		return nil, err
 	}

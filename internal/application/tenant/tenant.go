@@ -8,41 +8,44 @@ import (
 )
 
 type Tenant struct {
-	ID         string
-	Slug       string
-	Version    int
-	Name       string
-	Enabled    bool
-	CreatedAt  time.Time
-	ModifiedAt time.Time
+	ID          string
+	Slug        string
+	Version     int
+	Name        string
+	Enabled     bool
+	OwnerUserID string
+	CreatedAt   time.Time
+	ModifiedAt  time.Time
 }
 
-func NewTenant(slug, name string) (*Tenant, error) {
+func NewTenant(slug, name, ownerUserID string) (*Tenant, error) {
 	if err := validate(slug, name); err != nil {
 		return nil, err
 	}
 
 	now := time.Now().UTC()
 	return &Tenant{
-		ID:         uuid.New().String(),
-		Slug:       slug,
-		Version:    1,
-		Name:       name,
-		Enabled:    true,
-		CreatedAt:  now,
-		ModifiedAt: now,
+		ID:          uuid.New().String(),
+		Slug:        slug,
+		Version:     1,
+		Name:        name,
+		Enabled:     true,
+		OwnerUserID: ownerUserID,
+		CreatedAt:   now,
+		ModifiedAt:  now,
 	}, nil
 }
 
-func Reconstruct(id, slug string, version int, name string, enabled bool, createdAt, modifiedAt time.Time) *Tenant {
+func Reconstruct(id, slug string, version int, name string, enabled bool, ownerUserID string, createdAt, modifiedAt time.Time) *Tenant {
 	return &Tenant{
-		ID:         id,
-		Slug:       slug,
-		Version:    version,
-		Name:       name,
-		Enabled:    enabled,
-		CreatedAt:  createdAt,
-		ModifiedAt: modifiedAt,
+		ID:          id,
+		Slug:        slug,
+		Version:     version,
+		Name:        name,
+		Enabled:     enabled,
+		OwnerUserID: ownerUserID,
+		CreatedAt:   createdAt,
+		ModifiedAt:  modifiedAt,
 	}
 }
 

@@ -23,6 +23,7 @@ type deleteTenantHandler struct {
 	outbox       outbox.Outbox
 	txManager    mongo.TxManager
 	eventFactory TenantEventFactory
+	idp          IdentityProvider
 }
 
 func NewDeleteTenantHandler(
@@ -30,12 +31,14 @@ func NewDeleteTenantHandler(
 	outbox outbox.Outbox,
 	txManager mongo.TxManager,
 	eventFactory TenantEventFactory,
+	idp IdentityProvider,
 ) DeleteTenantHandler {
 	return &deleteTenantHandler{
 		repo:         repo,
 		outbox:       outbox,
 		txManager:    txManager,
 		eventFactory: eventFactory,
+		idp:          idp,
 	}
 }
 
@@ -71,6 +74,11 @@ func (h *deleteTenantHandler) Handle(ctx context.Context, cmd DeleteCommand) err
 	logger.Get(ctx).Debug("tenant deleted", zap.String("slug", cmd.Slug))
 
 	_ = send(ctx) //nolint:errcheck // best-effort send
+
+	if err := h.idp.DeleteUser(ctx, t.OwnerUserID); err != nil {
+		logger.Get(ctx).Warn("failed to delete owner user from identity provider",
+			zap.String("slug", cmd.Slug), zap.String("userID", t.OwnerUserID), zap.Error(err))
+	}
 
 	return nil
 }
