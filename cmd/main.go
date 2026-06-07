@@ -24,7 +24,7 @@ import (
 var AppModules = fx.Options(
 	// Commons
 	commons_core.NewCoreModule(),
-	commons_persistence.NewPersistenceModule(),
+	commons_persistence.NewPersistenceModule(commons_persistence.WithMigrations()),
 	commons_http.NewHTTPModule(),
 	commons_observability.NewObservabilityModule(),
 	commons_messaging.NewMessagingModule(),
