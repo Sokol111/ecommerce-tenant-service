@@ -48,10 +48,6 @@ func (h *deleteTenantHandler) Handle(ctx context.Context, cmd DeleteCommand) err
 		return fmt.Errorf("failed to get tenant: %w", err)
 	}
 
-	if t.Enabled {
-		return ErrTenantNotDisabled
-	}
-
 	msg := h.eventFactory.NewTenantDeletedOutboxMessage(ctx, t.Slug)
 
 	send, err := mongo.WithTransaction(ctx, h.txManager, func(txCtx context.Context) (outbox.SendFunc, error) {

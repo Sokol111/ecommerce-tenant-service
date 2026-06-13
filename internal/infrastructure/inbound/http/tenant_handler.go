@@ -118,13 +118,6 @@ func (h *tenantHandler) DeleteTenant(ctx context.Context, params httpapi.DeleteT
 			Title:  "Tenant not found",
 		}, nil
 	}
-	if errors.Is(err, tenant.ErrTenantNotDisabled) {
-		return &httpapi.DeleteTenantBadRequest{
-			Status: 400,
-			Type:   *aboutBlankURL,
-			Title:  "Tenant must be disabled before deletion",
-		}, nil
-	}
 	if err != nil {
 		return nil, err
 	}
