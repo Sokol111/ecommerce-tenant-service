@@ -10,9 +10,8 @@ import (
 	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commons_validation "github.com/Sokol111/ecommerce-commons/pkg/security/validation"
 	commons_swaggerui "github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
-	"github.com/Sokol111/ecommerce-tenant-service-api/gen/httpapi"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application"
-	internalhttp "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/inbound/http"
+	internalconnect "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/inbound/connect"
 	internalk8s "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/outbound/k8s"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/outbound/kafka"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/outbound/logto"
@@ -25,7 +24,7 @@ var AppModules = fx.Options(
 	// Commons
 	commons_core.NewCoreModule(),
 	commons_persistence.NewPersistenceModule(commons_persistence.WithMigrations()),
-	commons_http.NewHTTPModule(),
+	commons_http.NewHTTPModule(commons_http.WithH2C()),
 	commons_observability.NewObservabilityModule(),
 	commons_messaging.NewMessagingModule(),
 	commons_validation.NewModule(),
@@ -38,9 +37,8 @@ var AppModules = fx.Options(
 	logto.Module(),
 	internalk8s.Module(),
 
-	// HTTP
-	httpapi.ServerModule(),
-	internalhttp.Module(),
+	// Connect (gRPC/Connect-RPC — new)
+	internalconnect.Module(),
 )
 
 func main() {
