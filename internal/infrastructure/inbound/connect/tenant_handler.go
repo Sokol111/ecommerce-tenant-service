@@ -178,7 +178,7 @@ func toProtoTenant(t *tenant.Tenant) *tenantv1.Tenant {
 		Slug:       t.Slug,
 		Name:       t.Name,
 		Enabled:    t.Enabled,
-		Version:    int32(t.Version),
+		Version:    int32(t.Version), //nolint:gosec // Version is an optimistic lock counter, cannot realistically overflow int32
 		CreatedAt:  timestamppb.New(t.CreatedAt),
 		ModifiedAt: timestamppb.New(t.ModifiedAt),
 	}
