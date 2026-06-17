@@ -10,8 +10,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/Sokol111/ecommerce-commons v0.8.4 h1:hJdYEd3ZWYKVpfZDEGocWCuFWBlch8rLdnYtBwZwQhs=
 github.com/Sokol111/ecommerce-commons v0.8.4/go.mod h1:xPGa7qUx7o86J8Zz8bSsLIOvWJ4N9KcpHtYVUdxUofk=
-github.com/Sokol111/ecommerce-tenant-service-api v0.1.7 h1:akAmk3/mlAt7ViWmaDvR9lbDW1qc1tUBI5axeUklvKM=
-github.com/Sokol111/ecommerce-tenant-service-api v0.1.7/go.mod h1:nq+mLe8r56BZ9D334VfcV4sKiD1LYXHdrq5nsj8Y4yo=
+github.com/Sokol111/ecommerce-tenant-service-api v0.1.8 h1:RCVrCJ0gOKekvt9TEfNvjAbZ33tfwiTDA2ZrhJu+nkQ=
+github.com/Sokol111/ecommerce-tenant-service-api v0.1.8/go.mod h1:nq+mLe8r56BZ9D334VfcV4sKiD1LYXHdrq5nsj8Y4yo=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1xcsSM=

@@ -105,9 +105,9 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, req *connect.Request[
 	}
 
 	resp := &tenantv1.GetTenantListResponse{
-		Page:  int32(result.Page),
-		Size:  int32(result.Size),
-		Total: int32(result.Total),
+		Page:  int32(result.Page), //nolint:gosec // Page originates from int32 proto field, cannot overflow
+		Size:  int32(result.Size), //nolint:gosec // Size originates from int32 proto field, cannot overflow
+		Total: result.Total,
 	}
 	for _, t := range result.Items {
 		resp.Items = append(resp.Items, toProtoTenant(t))
