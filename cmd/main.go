@@ -9,7 +9,6 @@ import (
 	commons_observability "github.com/Sokol111/ecommerce-commons/pkg/observability"
 	commons_persistence "github.com/Sokol111/ecommerce-commons/pkg/persistence"
 	commons_validation "github.com/Sokol111/ecommerce-commons/pkg/security/validation"
-	commons_swaggerui "github.com/Sokol111/ecommerce-commons/pkg/swaggerui"
 	"github.com/Sokol111/ecommerce-tenant-service/internal/application"
 	internalconnect "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/inbound/connect"
 	internalk8s "github.com/Sokol111/ecommerce-tenant-service/internal/infrastructure/outbound/k8s"
@@ -28,7 +27,6 @@ var AppModules = fx.Options(
 	commons_observability.NewObservabilityModule(),
 	commons_messaging.NewMessagingModule(),
 	commons_validation.NewModule(),
-	commons_swaggerui.NewSwaggerModule(),
 
 	// Domain & Application
 	internalmongo.Module(),
