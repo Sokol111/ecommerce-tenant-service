@@ -61,7 +61,7 @@ func provideProcedurePermissions() validation.ProcedurePermissions {
 	return validation.ProcedurePermissions{
 		tenantv1connect.TenantServiceCreateTenantProcedure:          {"tenants:write"},
 		tenantv1connect.TenantServiceUpdateTenantProcedure:          {"tenants:write"},
-		tenantv1connect.TenantServiceDeleteTenantProcedure:          {"tenants:write"},
+		tenantv1connect.TenantServiceDeleteTenantProcedure:          {"tenants:delete"},
 		tenantv1connect.TenantServiceGetTenantBySlugProcedure:       {"tenants:read"},
 		tenantv1connect.TenantServiceGetTenantListProcedure:         {"tenants:read"},
 		tenantv1connect.TenantServiceGetEnabledTenantSlugsProcedure: {"tenants:read"},
