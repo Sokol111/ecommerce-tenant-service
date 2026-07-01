@@ -88,7 +88,12 @@ func (h *tenantHandler) GetTenantList(ctx context.Context, req *connect.Request[
 		sort = *req.Msg.Sort
 	}
 	if req.Msg.Order != nil {
-		order = *req.Msg.Order
+		switch *req.Msg.Order {
+		case tenantv1.SortOrder_SORT_ORDER_DESC:
+			order = "desc"
+		default:
+			order = "asc"
+		}
 	}
 
 	q := tenant.GetListQuery{
@@ -142,21 +147,7 @@ func (h *tenantHandler) RegisterTenant(ctx context.Context, req *connect.Request
 		return nil, mapConnectError(err)
 	}
 
-	// Completed synchronously — return tenant.
-	if result.Tenant != nil {
-		return connect.NewResponse(&tenantv1.RegisterTenantResponse{
-			Result: &tenantv1.RegisterTenantResponse_Tenant{
-				Tenant: toProtoTenant(result.Tenant),
-			},
-		}), nil
-	}
-
-	// Deferred to worker — return status.
-	return connect.NewResponse(&tenantv1.RegisterTenantResponse{
-		Result: &tenantv1.RegisterTenantResponse_Status{
-			Status: toProtoRegistrationStatus(result.Registration),
-		},
-	}), nil
+	return connect.NewResponse(toProtoRegistrationStatus(result.Registration)), nil
 }
 
 func (h *tenantHandler) GetRegistrationStatus(ctx context.Context, req *connect.Request[tenantv1.GetRegistrationStatusRequest]) (*connect.Response[tenantv1.GetRegistrationStatusResponse], error) {
@@ -178,14 +169,14 @@ func toProtoTenant(t *tenant.Tenant) *tenantv1.Tenant {
 		Slug:       t.Slug,
 		Name:       t.Name,
 		Enabled:    t.Enabled,
-		Version:    int32(t.Version), //nolint:gosec // Version is an optimistic lock counter, cannot realistically overflow int32
+		Version:    int64(t.Version),
 		CreatedAt:  timestamppb.New(t.CreatedAt),
 		ModifiedAt: timestamppb.New(t.ModifiedAt),
 	}
 }
 
-func toProtoRegistrationStatus(reg *registration.Registration) *tenantv1.RegistrationStatusResponse {
-	resp := &tenantv1.RegistrationStatusResponse{
+func toProtoRegistrationStatus(reg *registration.Registration) *tenantv1.RegisterTenantResponse {
+	resp := &tenantv1.RegisterTenantResponse{
 		Slug:   reg.Slug,
 		Status: toProtoRegistrationStatusEnum(reg.Status),
 	}
