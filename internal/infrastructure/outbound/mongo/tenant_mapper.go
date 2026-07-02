@@ -38,10 +38,10 @@ func (m *tenantMapper) GetID(e *tenantEntity) string {
 	return e.ID
 }
 
-func (m *tenantMapper) GetVersion(e *tenantEntity) int {
+func (m *tenantMapper) GetVersion(e *tenantEntity) int64 {
 	return e.Version
 }
 
-func (m *tenantMapper) SetVersion(e *tenantEntity, version int) {
+func (m *tenantMapper) SetVersion(e *tenantEntity, version int64) {
 	e.Version = version
 }

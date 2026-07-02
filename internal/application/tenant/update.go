@@ -13,7 +13,7 @@ import (
 
 type UpdateCommand struct {
 	Slug    string
-	Version int
+	Version int64
 	Name    string
 	Enabled bool
 }

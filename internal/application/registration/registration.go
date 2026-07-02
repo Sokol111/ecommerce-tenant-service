@@ -33,12 +33,12 @@ type Registration struct {
 	CatalogSeeded  bool
 
 	FailureReason *string
-	RetryCount    int
+	RetryCount    int32
 	NextRetryAt   *time.Time
 
 	CreatedAt   time.Time
 	CompletedAt *time.Time
-	Version     int
+	Version     int64
 }
 
 func New(slug, name, email, firstName, lastName, logtoUserID string) (*Registration, error) {
@@ -70,9 +70,9 @@ func Reconstruct(
 	tenantID, logtoUserID *string,
 	tenantSet, roleAssigned, eventPublished, catalogSeeded bool,
 	failureReason *string,
-	retryCount int, nextRetryAt *time.Time,
+	retryCount int32, nextRetryAt *time.Time,
 	createdAt time.Time, completedAt *time.Time,
-	version int,
+	version int64,
 ) *Registration {
 	return &Registration{
 		ID:             id,
@@ -154,7 +154,7 @@ func (r *Registration) ScheduleRetry() {
 func (r *Registration) nextRetryDelay() time.Duration {
 	base := 30 * time.Second
 	delay := base
-	for i := 0; i < r.RetryCount-1 && i < 5; i++ {
+	for i := 0; i < int(r.RetryCount-1) && i < 5; i++ {
 		delay *= 2
 	}
 	maxDelay := 15 * time.Minute

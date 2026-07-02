@@ -42,7 +42,7 @@ func (h *tenantHandler) CreateTenant(ctx context.Context, req *connect.Request[t
 func (h *tenantHandler) UpdateTenant(ctx context.Context, req *connect.Request[tenantv1.UpdateTenantRequest]) (*connect.Response[tenantv1.UpdateTenantResponse], error) {
 	cmd := tenant.UpdateCommand{
 		Slug:    req.Msg.Slug,
-		Version: int(req.Msg.Version),
+		Version: req.Msg.Version,
 		Name:    req.Msg.Name,
 		Enabled: req.Msg.Enabled,
 	}

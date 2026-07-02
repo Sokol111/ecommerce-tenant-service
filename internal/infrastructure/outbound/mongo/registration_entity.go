@@ -17,9 +17,9 @@ type registrationEntity struct {
 	EventPublished bool       `bson:"eventPublished"`
 	CatalogSeeded  bool       `bson:"catalogSeeded"`
 	FailureReason  *string    `bson:"failureReason,omitempty"`
-	RetryCount     int        `bson:"retryCount"`
+	RetryCount     int32      `bson:"retryCount"`
 	NextRetryAt    *time.Time `bson:"nextRetryAt,omitempty"`
 	CreatedAt      time.Time  `bson:"createdAt"`
 	CompletedAt    *time.Time `bson:"completedAt,omitempty"`
-	Version        int        `bson:"version"`
+	Version        int64      `bson:"version"`
 }

@@ -10,7 +10,7 @@ import (
 type Tenant struct {
 	ID          string
 	Slug        string
-	Version     int
+	Version     int64
 	Name        string
 	Enabled     bool
 	OwnerUserID string
@@ -36,7 +36,7 @@ func NewTenant(slug, name, ownerUserID string) (*Tenant, error) {
 	}, nil
 }
 
-func Reconstruct(id, slug string, version int, name string, enabled bool, ownerUserID string, createdAt, modifiedAt time.Time) *Tenant {
+func Reconstruct(id, slug string, version int64, name string, enabled bool, ownerUserID string, createdAt, modifiedAt time.Time) *Tenant {
 	return &Tenant{
 		ID:          id,
 		Slug:        slug,

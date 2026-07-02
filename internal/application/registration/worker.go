@@ -77,6 +77,6 @@ func (w *Worker) processOne(ctx context.Context, reg *Registration) {
 
 	if reg.RetryCount > 10 {
 		log.Error("CRITICAL: registration stuck after many retries",
-			zap.Int("retryCount", reg.RetryCount))
+			zap.Int32("retryCount", reg.RetryCount))
 	}
 }

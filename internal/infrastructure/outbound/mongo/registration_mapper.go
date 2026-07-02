@@ -76,10 +76,10 @@ func (m *registrationMapper) GetID(e *registrationEntity) string {
 	return e.ID
 }
 
-func (m *registrationMapper) GetVersion(e *registrationEntity) int {
+func (m *registrationMapper) GetVersion(e *registrationEntity) int64 {
 	return e.Version
 }
 
-func (m *registrationMapper) SetVersion(e *registrationEntity, version int) {
+func (m *registrationMapper) SetVersion(e *registrationEntity, version int64) {
 	e.Version = version
 }
