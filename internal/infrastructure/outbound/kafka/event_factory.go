@@ -27,7 +27,8 @@ func (f *tenantEventFactory) NewTenantUpdatedOutboxMessage(_ context.Context, t 
 			CreatedAt:  timestamppb.New(t.CreatedAt),
 			ModifiedAt: timestamppb.New(t.ModifiedAt),
 		},
-		Key: t.Slug,
+		Topic: events.TopicFor(&eventsv1.TenantUpdatedEvent{}),
+		Key:   t.Slug,
 	}
 }
 
