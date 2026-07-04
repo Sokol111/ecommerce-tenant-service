@@ -4,8 +4,8 @@ go 1.26.4
 
 require (
 	connectrpc.com/connect v1.20.0
-	github.com/Sokol111/ecommerce-commons v0.8.5
-	github.com/Sokol111/ecommerce-tenant-service-api v0.2.1
+	github.com/Sokol111/ecommerce-commons v0.8.6
+	github.com/Sokol111/ecommerce-tenant-service-api v0.2.4
 	github.com/google/uuid v1.6.0
 	github.com/knadh/koanf/v2 v2.3.4
 	go.mongodb.org/mongo-driver/v2 v2.6.0
