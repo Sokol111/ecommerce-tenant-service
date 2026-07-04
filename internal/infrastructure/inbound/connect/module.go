@@ -14,6 +14,7 @@ import (
 // Module provides the Connect gRPC/Connect-RPC server handlers for tenant operations.
 func Module() fx.Option {
 	return fx.Options(
+		ErrorMappingModule(25),
 		fx.Provide(
 			newTenantHandler,
 			newRegistrationHandler,
