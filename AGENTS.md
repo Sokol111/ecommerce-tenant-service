@@ -1,4 +1,4 @@
-# CLAUDE.md — ecommerce-tenant-service
+# AGENTS.md — ecommerce-tenant-service
 
 Multi-tenancy service: source of truth for tenants, and the orchestrator for **self-service
 tenant registration**. Consumed by every other service (each wires `tenant-service-api`).
