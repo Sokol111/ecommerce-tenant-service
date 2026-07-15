@@ -2,7 +2,7 @@
 
 Multi-tenancy service: source of truth for tenants, and the orchestrator for **self-service
 tenant registration**. Consumed by every other service (each wires `tenant-service-api`).
-Read the workspace-root `CLAUDE.md` first for cross-repo rules (release-then-bump, hexagonal
+Read the workspace-root `AGENTS.md` first for cross-repo rules (release-then-bump, hexagonal
 layout, `fx` DI, `buf`-generated contracts, tenant conventions). This file covers what is
 specific to *this* service.
 
@@ -85,7 +85,7 @@ on both `tenant` and `registration`, plus the registration status/retry and TTL 
 
 ## Commands
 
-Standard Go-service Makefile (see root `CLAUDE.md`). Most-used here:
+Standard Go-service Makefile (see root `AGENTS.md`). Most-used here:
 ```bash
 make run                 # go run ./cmd/main.go
 make test                # -race + coverage
